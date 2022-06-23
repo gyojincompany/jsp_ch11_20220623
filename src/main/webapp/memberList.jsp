@@ -5,18 +5,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>회원 가입 완료</title>
+<title>회원 목록</title>
 </head>
 <body>
 	<%
-		request.setCharacterEncoding("utf-8");//한글깨짐 방지
-		
-		String mid = request.getParameter("userId");
-		String mpw = request.getParameter("userPw");
-		String memail = request.getParameter("userEmail");
-		
-		String sql = "INSERT INTO members(id, passwd, email) VALUES ('"+ mid +"','" + mpw + "','" + memail + "')";
-		
 		//data source 설정
 		String driverName = "com.mysql.jdbc.Driver";
 		String url = "jdbc:mysql://localhost:3306/odbo";
@@ -25,26 +17,40 @@
 		
 		Connection conn = null;
 		Statement stmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT * FROM members";
 		
 		try{
 			Class.forName(driverName);//드라이버 로딩
 			conn = DriverManager.getConnection(url, username, password);//데이터베이스 연동
 			stmt = conn.createStatement();//sql을 실행해주는 statement 객체 생성
 			
-			int resultCheck = stmt.executeUpdate(sql);//SQL실행->1이 반환되면 성공, 아니면 실패
+			rs = stmt.executeQuery(sql);
 			
-			if(resultCheck == 1){
-				out.print("회원가입성공!");
-			} else {
-				out.print("회원가입실패!");
+			int count = 1;
+			
+			while(rs.next()) {
+				String mid = rs.getString("id");
+				String mpw = rs.getString("passwd");
+				String memail = rs.getString("email");
+				String mdate = rs.getString("signuptime");
+				
+				out.println("[" + count + "] 아이디 : " + mid + " / 비밀번호 : " + mpw + "/ 이메일 : " + memail + "/ 가입일 : " + mdate);
+				out.println("<br>");
+				
+				count++;
 			}
 			
-			
+			out.println("총 회원수 : " + count + "명");
 			
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			try{
+				if(rs != null) {
+					rs.close();
+				}
 				if(stmt != null){
 					stmt.close();
 				}
@@ -56,10 +62,7 @@
 			}
 		}
 	
+	
 	%>
-	
-	<br>
-	<a href="memberList.jsp">회원리스트 보기</a>
-	
 </body>
 </html>
